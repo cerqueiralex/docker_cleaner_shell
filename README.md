@@ -19,3 +19,7 @@ Primeiramente, ele define algumas variáveis de controle que podem ser customiza
 Exemplo de módulo para quem trabalha com Airflow:
 
 Caso a variável airflow esteja ativada, ele limpa os logs dentro dos containers do Airflow (scheduler, webserver, worker e triggerer), executando comandos docker exec com rm -rf. Se reiniciar_containers estiver como true, reinicia esses mesmos containers usando docker restart e exibe seu status com docker ps.
+
+<img src="https://i.imgur.com/hQiipRq.png" style="width:100%;height:auto"/>
+<img src="https://i.imgur.com/C5Q8R8Z.png" style="width:100%;height:auto"/>
+
