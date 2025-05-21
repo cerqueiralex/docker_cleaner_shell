@@ -22,7 +22,7 @@ airflow=true
 reiniciar_containers=false
 docker_container_prefix="project_course_airflow_aws_openweather"
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
-# AIRFLOW: Script to clean Airflow logs and restart containers
+# AIRFLOW
 
 echo "Iniciando Limpeza Airflow"
 
@@ -46,7 +46,7 @@ else
   echo "reiniciar_containers = false"
 fi
 
-exit 1
+# exit 1
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
 
 
