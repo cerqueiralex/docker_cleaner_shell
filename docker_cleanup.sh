@@ -6,13 +6,14 @@
 # Verificar Permissão:
 # sudo ls -l docker_cleanup.sh
 
-# Executar
+# Executar (path raíz)
 # sudo ./docker_cleanup.sh
 
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
 # VARIÁVEIS
 
-set -e # interrompe o script ao encontrar qualquer erro
+# interrompe o script ao encontrar qualquer erro
+set -e 
 
 # Variável para reiniciar o docker após finalização do script
 reiniciar_docker=false
@@ -20,7 +21,7 @@ reiniciar_docker=false
 # Variável para executar etapa extra do Airflow
 airflow=true
 reiniciar_containers=false
-docker_container_prefix="project_course_airflow_aws_openweather"
+docker_container_prefix="nome-do-diretorio"
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
 # AIRFLOW
 
@@ -40,16 +41,14 @@ fi
 if [ "$reiniciar_containers" = true ]; then
   echo "🌀 Todos os logs limps. Reiniciando os containers..."
   docker restart ${docker_container_prefix}-airflow-scheduler-1 ${docker_container_prefix}-airflow-webserver-1 ${docker_container_prefix}-airflow-worker-1 ${docker_container_prefix}-airflow-triggerer-1
-  echo "Containers restarted. Checking container status..."
-  docker ps -a | grep ${docker_container_prefix} # Show container status
+  echo "Containers reiniciados. Checando status do container..."
+  docker ps -a | grep ${docker_container_prefix}
 else 
   echo "reiniciar_containers = false"
 fi
 
-# exit 1
+# exit 1 # Trava de módulo
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
-
-
 
 echo "🧹 Iniciando limpeza total do Docker com permissões sudo..."
 
@@ -57,7 +56,7 @@ echo "🧹 Iniciando limpeza total do Docker com permissões sudo..."
 if [ -f docker-compose.yml ] || [ -f docker-compose.yaml ]; then
   echo "📉 Executando 'docker compose down'..."
   if sudo docker compose down --volumes --remove-orphans; then
-    echo "✅ docker compose down executado com sucesso."
+    echo "✅ Docker compose down executado com sucesso."
   else
     echo "❌ Falha ao executar docker compose down." >&2
     exit 1
