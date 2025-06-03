@@ -23,3 +23,20 @@ Caso a variável airflow esteja ativada, ele limpa os logs dentro dos containers
 <img src="https://i.imgur.com/hQiipRq.png" style="width:100%;height:auto"/>
 <img src="https://i.imgur.com/C5Q8R8Z.png" style="width:100%;height:auto"/>
 
+## Updates
+
+🧟 Remoção de Containers Zumbis com PID = 0
+
+Este script realiza uma etapa adicional de verificação e remoção de containers zumbis, que são instâncias Docker que aparecem como "em execução", mas na verdade estão com o processo interno travado ou ausente — ou seja, com PID = 0 no sistema.  
+
+🔍 O que são containers zumbis?  
+
+Containers com PID = 0 são geralmente um sinal de erro no Docker ou no sistema operacional. Eles não executam nenhum processo real e não respondem a comandos tradicionais como docker stop.
+✅ Como o script lida com eles?  
+
+Durante a execução do script, é feita uma varredura em todos os containers ativos e parados. Aqueles com PID = 0 são identificados usando docker inspect e removidos à força com docker rm -f.  
+```
+docker inspect --format '{{.State.Pid}}' <container_id>
+```
+
+Se o retorno for 0, o container é marcado como zumbi e excluído do sistema automaticamente. 
