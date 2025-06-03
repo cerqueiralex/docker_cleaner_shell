@@ -216,9 +216,8 @@ fi
 
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
 # VERIFICAÇÃO (DEBUG)
-echo "✅ Limpeza completa do Docker finalizada!"
 
-echo -e "\n🔍 Estado atual do Docker após limpeza:\n"
+echo -e "\n🔍 Imprimindo status de Debug e verificação:\n"
 
 echo "🧱 Containers existentes:"
 sudo docker ps -a || echo "Nenhum container encontrado."
