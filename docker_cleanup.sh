@@ -10,25 +10,49 @@
 # sudo ./docker_cleanup.sh
 
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
-# VARIÁVEIS
+# VARIÁVEIS DE CONFIGURAÇÃO GERAL
 
-set -e # interrompe o script ao encontrar qualquer erro
+# set -e # interrompe o script ao encontrar qualquer erro (opcional: comentar em caso de conteineres zumbis)
 # set -x  # Descomentar para ver log completo
-
-# Modo debug roda somente o módulo de verificação
-modo_debug=true
-
-# Variável para reiniciar o docker após finalização do script
+modo_debug=false # Variável para reiniciar o docker após finalização do script
 reiniciar_docker=false
+docker_container_prefix="nome_do_container"
+conteiner_zumbi=false # Variável para eliminar containers com PID = 0 (zumbis reais)
 
-# Variável para executar etapa extra do Airflow
+# Módulo Airflow
 airflow=false
 reiniciar_containers=false
-docker_container_prefix="project_course_airflow_aws_openweather"
-
 
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
-# AIRFLOW: Script to clean Airflow logs and restart containers
+# CONTEINERES ZUMBI
+
+# Verificar e remover containers zumbis com PID = 0
+if [ "$conteiner_zumbi" = true ]; then  
+  echo "🧟 Verificando containers com PID = 0 (zumbis reais)..."
+
+  zombie_pid_zero=$(docker ps -aq | while read cid; do
+    pid=$(docker inspect --format '{{.State.Pid}}' "$cid" 2>/dev/null || echo "error")
+    if [[ "$pid" == "0" ]]; then
+      echo "$cid"
+    fi
+  done)
+
+  if [ -n "$zombie_pid_zero" ]; then
+    echo "⚠️ Containers zumbis com PID = 0 encontrados:"
+    docker ps -a --filter "id=$(echo $zombie_pid_zero | tr '\n' ',')" 2>/dev/null
+
+    echo "🗑️ Removendo containers zumbis (PID = 0)..."
+    docker rm -f $zombie_pid_zero && echo "✅ Containers zumbis removidos."
+  else
+    echo "🎉 Nenhum container com PID = 0 encontrado."
+  fi
+else
+  echo "conteiner_zumbi false"
+fi
+# exit 1
+
+# 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
+# AIRFLOW MÓDULO
 
 if [ "$modo_debug" = false ]; then
   echo "Iniciando Limpeza Airflow"
@@ -61,11 +85,15 @@ fi
 # exit 1
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
 
-
 echo "🧹 Iniciando limpeza total do Docker com permissões sudo..."
 
+# Variáveis para serem utilizadas nos módulos de remoção
+containers=$(sudo docker ps -aq) 
+images=$(sudo docker images -aq)
+volumes=$(sudo docker volume ls -q)
+
+# Derrubando serviços Docker Compose, se houver
 if [ "$modo_debug" = false ]; then
-# 0. Derrubando serviços Docker Compose, se houver
   if [ -f docker-compose.yml ] || [ -f docker-compose.yaml ]; then
     echo "📉 Executando 'docker compose down'..."
     if sudo docker compose down --volumes --remove-orphans; then
@@ -79,10 +107,10 @@ else
   echo "debug true"
 fi
 
+# Parar todos os containers em execução
 if [ "$modo_debug" = false ]; then
-  # 1. Parar todos os containers em execução
   echo "⛔ Parando todos os containers..."
-  if containers=$(sudo docker ps -aq) && [ -n "$containers" ]; then
+  if [ -n "$containers" ]; then
     if sudo docker stop $containers; then
       echo "✅ Containers parados."
     else
@@ -96,10 +124,10 @@ else
   echo "debug true"
 fi
 
+# Remover todos os containers
 if [ "$modo_debug" = false ]; then
-  # 2. Remover todos os containers
   echo "🗑️ Removendo todos os containers..."
-  if containers=$(sudo docker ps -aq) && [ -n "$containers" ]; then
+  if [ -n "$containers" ]; then
     if sudo docker rm -f $containers; then
       echo "✅ Containers removidos."
     else
@@ -113,10 +141,10 @@ else
   echo "debug true"
 fi
 
+# Remover todas as imagens
 if [ "$modo_debug" = false ]; then
-  # 3. Remover todas as imagens
   echo "🖼️ Removendo todas as imagens..."
-  if images=$(sudo docker images -aq) && [ -n "$images" ]; then
+  if [ -n "$images" ]; then
     if sudo docker rmi -f $images; then
       echo "✅ Imagens removidas."
     else
@@ -130,10 +158,10 @@ else
   echo "debug true"
 fi
 
+# Remover todos os volumes
 if [ "$modo_debug" = false ]; then
-  # 4. Remover todos os volumes
   echo "📦 Removendo todos os volumes..."
-  if volumes=$(sudo docker volume ls -q) && [ -n "$volumes" ]; then
+  if [ -n "$volumes" ]; then
     if sudo docker volume rm -f $volumes; then
       echo "✅ Volumes removidos."
     else
@@ -147,8 +175,8 @@ else
   echo "debug true"
 fi
 
+# Remover redes não utilizadas (exceto as padrão)
 if [ "$modo_debug" = false ]; then
-  # 5. Remover redes não utilizadas (exceto as padrão)
   echo "🔌 Removendo redes não utilizadas..."
   if sudo docker network prune -f; then
     echo "✅ Redes não utilizadas removidas."
@@ -160,8 +188,8 @@ else
   echo "debug true"
 fi
 
+# Remover cache de build
 if [ "$modo_debug" = false ]; then
-  # 6. Remover cache de build
   echo "🛠️ Removendo cache de build..."
   if sudo docker builder prune -af; then
     echo "✅ Cache de build removido."
@@ -173,8 +201,8 @@ else
   echo "debug true"
 fi
 
+# Prune geral para garantir limpeza total
 if [ "$modo_debug" = false ]; then
-  # 7. Prune geral para garantir limpeza total
   echo "🧽 Limpando tudo com docker system prune..."
   if sudo docker system prune -af --volumes; then
     echo "✅ Prune geral concluído."
@@ -187,7 +215,7 @@ else
 fi
 
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
-# VERIFICAÇÃO
+# VERIFICAÇÃO (DEBUG)
 echo "✅ Limpeza completa do Docker finalizada!"
 
 echo -e "\n🔍 Estado atual do Docker após limpeza:\n"
@@ -204,7 +232,8 @@ sudo docker volume ls || echo "Nenhum volume encontrado."
 echo -e "\n🛠️ Builds existentes:"
 sudo docker builder ls || echo "Nenhum builder encontrado."
 
-echo -e "\n✨ Fim da verificação."
+echo -e "\n🛠️ Redes existentes:"
+sudo docker network ls || echo "Nenhuma rede encontrada."
 
 # 🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰🀰
 # Reiniciar Docker
@@ -215,3 +244,5 @@ if [ "$reiniciar_docker" = true ]; then
 else 
   echo "reiniciar_docker = false"
 fi
+
+echo -e "\n✨ Script Finalizado."
